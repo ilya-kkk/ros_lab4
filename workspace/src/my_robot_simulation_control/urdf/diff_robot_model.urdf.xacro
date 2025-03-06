@@ -1,0 +1,311 @@
+<?xml version="1.0"?>
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find my_robot_simulation_control)/urdf/materials.xacro" />
+  <xacro:include filename="./robot_diff.gazebo" />
+
+  <!-- Базовое звено -->
+  <link name='base_link'>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.22 0.16 0.09"/> 
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <!-- Вертикальная стойка (фиксированная) -->
+  <link name='founder'>
+    <visual>
+      <origin xyz="0 0.03 0.01" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.1 0.1 0.2"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="joint_founder" type="fixed">
+    <parent link="base_link"/>
+    <child link="founder"/>
+    <origin xyz="0 0 0.05"/>
+  </joint>
+  
+  <!-- New link: parallel to base_link and perpendicular to founder -->
+  <link name="link2">
+    <visual>
+      <origin xyz="0.0 0.05 0" rpy="0 1.5707 0"/> <!-- Positioned perpendicular to founder -->
+      <geometry>
+        <box size="0.01 0.01 0.2"/> <!-- Adjust size as needed -->
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <!-- Joint to connect 'new_link' to 'founder' -->
+  <joint name="base_joint" type="revolute">
+    <parent link="founder"/>
+    <child link="link2"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/> 
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.2" upper="1.57" effort="50" velocity="1.0"/>
+  </joint>
+  
+  <!-- upper Колеса -->
+  <link name="link1">
+    <visual>
+      <origin xyz="-0.02 0 0" rpy="0 1.6 0"/>
+      <geometry>
+        <cylinder length="0.015" radius="0.02"/>
+      </geometry>
+      <material name="pink">
+        <color rgba="1 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="joint12" type="fixed">
+    <parent link="link2"/>
+    <child link="link1"/>
+    <origin xyz="0.08 0.05 0" rpy="0 0 0"/> 
+  </joint>
+
+  <link name="link3">
+    <visual>
+      <origin xyz="0.02 0 0" rpy="0 1.6 0"/>
+      <geometry>
+        <cylinder length="0.015" radius="0.02"/>
+      </geometry>
+      <material name="pink">
+        <color rgba="1 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="joint23" type="fixed">
+    <parent link="link2"/>
+    <child link="link3"/>
+    <origin xyz="-0.08 0.05 0" rpy="0 0 0"/> 
+  </joint>
+  
+  <!-- hands -->
+  <link name="hand1">
+    <visual>
+      <origin xyz="0.03 0.12 0" rpy="0 1.6 0"/>
+      <geometry>
+        <box size="0.03 0.2 0.03"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="hand2">
+    <visual>
+      <origin xyz="0.03 0.12 0" rpy="0 1.6 0"/>
+      <geometry>
+        <box size="0.03 0.2 0.03"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="joint_hand_1" type="revolute">
+    <parent link="link2"/>
+    <child link="hand1"/>
+    <origin xyz="0.06 0.01 0" rpy="0 0 0"/> 
+    <axis xyz="0 0 -1"/> 
+    <limit lower="0" upper="0.1" effort="50" velocity="1.0"/>
+  </joint>
+
+  <joint name="joint_hand_2" type="revolute">
+    <parent link="link2"/>
+    <child link="hand2"/>
+    <origin xyz="-0.12 0.01 0" rpy="0 0 0"/> 
+    <axis xyz="0 0 1"/> 
+    <limit lower="0" upper="0.1" effort="50" velocity="1.0"/>
+  </joint>
+
+  <!-- wheels between hands and platforms -->
+  <link name="elbow1">
+    <visual>
+      <origin xyz="0.03 0.228 0" rpy="0 1.6 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.01"/>
+      </geometry>
+      <material name="pink">
+        <color rgba="1 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <link name="elbow2">
+    <visual>
+      <origin xyz="0.03 0.228 0" rpy="0 1.6 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.01"/>
+      </geometry>
+      <material name="pink">
+        <color rgba="1 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="elbow1_joint" type="revolute">
+    <parent link="hand1"/>
+    <child link="elbow1"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>   
+    <limit lower="-0.03" upper="0.03" effort="50" velocity="1.0"/>
+  </joint>
+
+  <joint name="elbow2_joint" type="revolute">
+    <parent link="hand2"/>
+    <child link="elbow2"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.03" upper="0.03" effort="50" velocity="1.0"/>
+  </joint>
+
+  <!-- platforms -->
+  <link name="plat1">
+    <visual>
+      <origin xyz="0.03 0.31 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.018 0.2 0.018"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="plat2">
+    <visual>
+      <origin xyz="0.03 0.31 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.018 0.2 0.018"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+ 
+  <joint name="joint_platform_1" type="fixed">
+    <parent link="elbow1"/>
+    <child link="plat1"/>
+    <origin xyz="0.0 0.01 0" rpy="0 0 0"/> 
+  </joint>
+  
+  <joint name="joint_platform_2" type="fixed">
+    <parent link="elbow2"/>
+    <child link="plat2"/>
+    <origin xyz="0.0 0.01 0" rpy="0 0 0"/> 
+  </joint>
+
+  <!-- Колеса (платформа CC) -->
+  <link name='wheel_left'>
+    <visual name='wheel_left_visual'>
+      <origin xyz="0.02 0 0" rpy="0 1.6 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.055"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/> <!-- Черный цвет -->
+      </material>
+    </visual>
+  </link>
+
+  <link name='wheel_right'>
+    <visual name='wheel_right_visual'>
+      <origin xyz="-0.02 0 0" rpy="0 1.6 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.055"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/> 
+      </material>
+    </visual>
+  </link>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_left"/>
+    <origin xyz="0.1 0 -0.05" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_right"/>
+    <origin xyz="-0.1 0 -0.05" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <!-- Линки для камеры и лидара -->
+  <link name="camera">
+    <visual name="camera_visual">
+      <origin xyz="0 0 0" rpy=" 0 0 0" />
+      <geometry>
+        <box size=".05 .05 .05" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
+  <link name="lidar_link">
+    <visual name="lidar_visual">
+      <origin xyz="0 0 0" rpy=" 0 0 0" />
+      <geometry>
+        <cylinder length="0.05" radius="0.03" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
+  <!-- Джоинты для камеры и лидара -->
+  <joint type="fixed" name="lidar_joint">
+    <origin xyz="0 0 0.19" rpy="0 0 1.57" />
+    <child link="lidar_link" />
+    <parent link="base_link" />
+  </joint>
+
+  <joint type="fixed" name="camera_joint">
+    <origin xyz="0 0.105 0.03" rpy="0 0 1.57" />
+    <child link="camera" />
+    <parent link="base_link" />
+  </joint>
+
+  <!-- Трансмиссии -->
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_wheel_joint">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_wheel_joint">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+</robot>

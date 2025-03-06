@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="my_model">
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://worlds/stll/lamp.stl</uri>
+            <scale>0.05 0.05 0.05</scale> <!-- Масштабирование -->
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://worlds/stll/lamp.stl</uri>
+            <scale>0.05 0.05 0.05</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+    <pose>0 0 0 1.57 0 0</pose> <!-- Позиция и ориентация -->
+  </model>
+</sdf>

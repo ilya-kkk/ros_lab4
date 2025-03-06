@@ -1,0 +1,53 @@
+<launch>
+
+
+    <!-- Запуск Gazebo -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find my_robot_simulation_control)/worlds/empty.world" />
+        <arg name="paused" value="false" />
+        <arg name="use_sim_time" value="true" />
+        <arg name="gui" value="true" />
+        <arg name="headless" value="false" />
+        <arg name="debug" value="false" />
+    </include>
+
+    <!-- Загрузка робота в сервер параметроы-->
+    <param name="robot_description"
+        command="xacro '$(find my_robot_simulation_control)/urdf/my_robots_super_model.xacro'" />
+
+    <!-- Спавн робота -->
+    <node name="my_robot_model_spawn" pkg="gazebo_ros" type="spawn_model"
+        args="-urdf -param robot_description -model my_robot_model">
+    </node>
+
+    <!-- Запуск RViz -->
+    <arg name="rviz_config" default="$(find my_robot_simulation_control)/config/camera+lidar.rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" />
+
+    <!-- Загрузка YAML конфига в сервер параметров -->
+    <rosparam file="$(find my_robot_simulation_control)/config/diff_control.yaml" command="load" />
+
+    <!-- Спавн контроллеров -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="control"
+        args="joint1_position_controller joint2_position_controller joint_state_controller" />
+
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"
+        output="screen">
+        <param name="publish_frequency" type="double" value="40.0" />
+        <remap from="/joint_states" to="/control/joint_states" />
+    </node>
+
+    <!-- Нода зрения -->
+    <node pkg="my_robot_simulation_control" type="cv.py" name="cv"
+        output="screen">
+    </node>
+
+    <!-- Нода руль -->
+    <node pkg="my_robot_simulation_control" type="control_kernel.py" name="control_kernel"
+        output="screen">
+    </node>
+
+
+</launch>
